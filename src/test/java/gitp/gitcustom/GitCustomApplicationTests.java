@@ -3,23 +3,22 @@ package gitp.gitcustom;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 @SpringBootTest(classes= GitCustomApplication.class)
 class GitCustomApplicationTests {
 
 	@Test
-	void contextLoads() {
-	}
+	void DateParseTest() throws ParseException {
+		String input = "2023-05-30 06:40:05 +0900";
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-DD HH:mm:ss Z");
 
-	@Test
-	void DateParseTest(){
+		Date date = formatter.parse(input);
 
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss yyyy ZZZZ");
-		LocalDateTime dateTime = LocalDateTime.parse(dateOutput, formatter);
+		long priorityRank = date.getTime();
+		System.out.println("priorityRank = " + priorityRank);
 
-		DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-		int priorityRank = Integer.parseInt(dateTime.format(outputFormatter));
 	}
 }

@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -27,17 +29,17 @@ public class GitCustomApplication {
 	private static PriorityQueue<DateAndFilePath> filePathAndDates = new PriorityQueue<>();
 
 	private static class DateAndFilePath implements Comparable<DateAndFilePath>{
-		private int date;
+		private long date;
 		private String filePath;
 
-		public DateAndFilePath(int priorityRank, String path) {
+		public DateAndFilePath(long priorityRank, String path) {
 			date = priorityRank;
 			filePath = path;
 		}
 
 		@Override
 		public int compareTo(DateAndFilePath other) {
-			return Integer.compare(this.date, other.date);
+			return Long.compare(this.date, other.date);
 		}
 	}
 
@@ -119,8 +121,8 @@ public class GitCustomApplication {
 		}
 	}
 
-	private static void setCommittedDate(File file) throws IOException, InterruptedException {
-		pb = new ProcessBuilder("git", "log", "-1", "--pretty=format:%ad", "\"" + file.getPath() + "\"")
+	private static void setCommittedDate(File file) throws IOException, InterruptedException, ParseException {
+		pb = new ProcessBuilder("git", "log", "-1", "--pretty=format:%cd", "--date=iso", "\"" + file.getPath() + "\"")
 				.directory(new File("."));
 
 		System.out.println("<< " + String.join(" ", pb.command()));
@@ -131,11 +133,11 @@ public class GitCustomApplication {
 				.collect(Collectors.joining(System.lineSeparator()));
 		process.waitFor();
 
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss yyyy ZZZZ");
-		LocalDateTime dateTime = LocalDateTime.parse(dateOutput, formatter);
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-DD HH:mm:ss Z");
 
-		DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-		int priorityRank = Integer.parseInt(dateTime.format(outputFormatter));
+		Date date = formatter.parse(dateOutput);
+
+		long priorityRank = date.getTime();
 
 		System.out.println("priorityRank = " + priorityRank);
 		filePathAndDates.add(new DateAndFilePath(priorityRank, file.getPath()));
