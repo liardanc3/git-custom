@@ -1,6 +1,8 @@
 package gitp.gitcustom.command.function;
 
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.IOUtils;
+import org.eclipse.jgit.api.Git;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 
@@ -15,11 +17,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @ShellComponent
-public class Rename {
+@RequiredArgsConstructor
+public class RenameFn {
 
-    private static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-    private static ProcessBuilder pb = null;
-    private static Process process = null;
+    private final Git git;
 
     private static String beforeName;
     private static String afterName;
