@@ -1,7 +1,9 @@
-package gitp.gitcustom.function;
+package gitp.gitcustom.command.function;
 
+import gitp.gitcustom.command.CustomCommands;
 import org.apache.commons.io.IOUtils;
 import org.springframework.shell.standard.ShellComponent;
+import org.springframework.shell.standard.ShellMethod;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -14,7 +16,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @ShellComponent
-public class Rename {
+public class Rename implements CustomCommands {
 
     private static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
     private static ProcessBuilder pb = null;
@@ -26,7 +28,7 @@ public class Rename {
     private static LinkedHashMap<String, String> filePathAndMessages = new LinkedHashMap<>();
     private static PriorityQueue<DateAndFilePath> filePathAndDates = new PriorityQueue<>();
 
-    private static class DateAndFilePath implements Comparable<DateAndFilePath>{
+    public static class DateAndFilePath implements Comparable<DateAndFilePath>{
         private long date;
         private String filePath;
 
@@ -41,7 +43,13 @@ public class Rename {
         }
     }
 
-    void run() throws IOException {
+    @ShellMethod("test")
+    public void test(){
+        System.out.println("It's test text");
+    }
+
+    @ShellMethod("rename")
+    public void rename() throws IOException {
         System.out.println(" = ");
         while(true){
             filePathAndMessages.clear();
