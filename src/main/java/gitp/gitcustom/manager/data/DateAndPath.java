@@ -4,8 +4,7 @@ import lombok.Data;
 
 /**
  * Stores committed date and file path.
- * <p>
- * Used in the priority queue of {@link gitp.gitcustom.manager.GitManager}
+ * <p>Used in the priority queue of {@link gitp.gitcustom.manager.GitManager}
  */
 @Data
 public class DateAndPath implements Comparable<DateAndPath>{
