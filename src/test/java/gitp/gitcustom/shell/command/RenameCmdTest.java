@@ -1,6 +1,5 @@
-package gitp.gitcustom.command.function;
+package gitp.gitcustom.shell.command;
 
-import lombok.RequiredArgsConstructor;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,18 +11,18 @@ import org.springframework.shell.Shell;
 
 @SpringBootTest
 @ExtendWith(OutputCaptureExtension.class)
-class RenameFnTest {
+class RenameCmdTest {
 
     @Autowired
     private Shell shell;
 
     @Test
     void test(CapturedOutput output) {
-        shell.evaluate(() -> "test");
+        shell.evaluate(() -> "rename --file Spring winter");
         String consoleOutput = output.getOut();
         System.out.println("consoleOutput = " + consoleOutput);
         String out = output.getOut();
         System.out.println("out = " + out);
-        Assertions.assertThat(consoleOutput).contains("It's test text");
+        Assertions.assertThat(consoleOutput).contains("rename test");
     }
 }

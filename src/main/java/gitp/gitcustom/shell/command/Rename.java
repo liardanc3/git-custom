@@ -1,4 +1,4 @@
-package gitp.gitcustom.command.function;
+package gitp.gitcustom.shell.command;
 
 import org.apache.commons.io.IOUtils;
 import org.springframework.shell.standard.ShellComponent;
