@@ -1,7 +1,7 @@
-package gitp.gitcustom.manager;
+package gitp.gitcustom.provider;
 
-import gitp.gitcustom.manager.data.DateAndPath;
-import gitp.gitcustom.manager.data.PathAndMessage;
+import gitp.gitcustom.shell.data.DateAndPath;
+import gitp.gitcustom.shell.data.PathAndMessage;
 import lombok.Data;
 import org.eclipse.jgit.api.Git;
 import org.springframework.shell.standard.ShellComponent;
@@ -16,7 +16,7 @@ import java.util.PriorityQueue;
  */
 @ShellComponent
 @Data
-public class GitManager {
+public class GitDataProvider {
 
     private Git git;
     private String branchName;
@@ -34,7 +34,7 @@ public class GitManager {
     private PathAndMessage pathAndMessages;
 
 
-    public GitManager(PathAndMessage pathAndMessages) throws IOException {
+    public GitDataProvider(PathAndMessage pathAndMessages) throws IOException {
         this.git = Git.open(new File("."));
         this.branchName = git.getRepository().getBranch();
 
