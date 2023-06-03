@@ -2,9 +2,9 @@ package gitp.gitcustom.shell.command;
 
 import gitp.gitcustom.provider.GitDataProvider;
 import gitp.gitcustom.shell.aop.annotation.ExceptionAspect;
-import gitp.gitcustom.shell.aop.exception.NoArgsException;
-import gitp.gitcustom.shell.data.DateAndPath;
-import gitp.gitcustom.shell.data.PathAndMessage;
+import gitp.gitcustom.provider.data.DateAndPath;
+import gitp.gitcustom.provider.data.PathAndMessage;
+import gitp.gitcustom.shell.aop.exception.ArgumentException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.eclipse.jgit.api.Git;
@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
+import org.springframework.util.Assert;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
@@ -41,17 +42,15 @@ public class RenameCmd {
     @ExceptionAspect
     @ShellMethod("rename")
     public void rename(@ShellOption(value = {"--file"}, arity = 2, defaultValue = "!n") String fileName[],
-                       @ShellOption(value = {"--msg"}, arity = 2, defaultValue = "!n") String commitMsg[]) throws NoArgsException {
+                       @ShellOption(value = {"--msg"}, arity = 2, defaultValue = "!n") String commitMsg[]) {
 
-        // if no args
-        if(fileName[0].equals("!n") && commitMsg[0].equals("!n")){
-            throw new NoArgsException();
-        }
+        Assert.isTrue(fileName.length == 2 || commitMsg.length == 2, () -> {throw new ArgumentException();});
+
         setPathWithDateAndMsg(new File("."));
 
         // file rename
         if(fileName.length == 2){
-            renameFiles(new File("."), fileName);
+           // renameFiles(new File("."), fileName);
         }
 
         // message edit
@@ -63,18 +62,27 @@ public class RenameCmd {
 
     @SneakyThrows
     private void setPathWithDateAndMsg(File file) {
+        System.out.println("file.getName() = " + file.getName());
 
-        // git log -n 1 --format="%cd" --date=iso -- <file-path>
-        // git log -n 1 --pretty=%B -- <file-path>
-        RevCommit commitLog = git
-                .log()
-                .addPath(file.getPath())
-                .setMaxCount(1)
-                .call()
-                .iterator()
-                .next();
-        pathAndMessages.put(file.getPath(), commitLog.getFullMessage());
-        dateAndPathPQ.add(new DateAndPath(commitLog.getCommitTime(), file.getPath()));
+
+        // TODO - get log
+        if(!file.getPath().equals(".")){
+            System.out.println("file.getPath() = " + file.getPath().substring(2));
+            RevCommit commitLog = git
+                    .log()
+                    .add(git.getRepository().resolve("HEAD"))
+                    .addPath(file.getPath().substring(2))
+                    .setMaxCount(1)
+                    .call()
+                    .iterator().next();
+
+            if(commitLog != null) {
+                System.out.println("commitLog = " + commitLog.getFullMessage());
+                pathAndMessages.put(file.getPath(), commitLog.getFullMessage());
+                dateAndPathPQ.add(new DateAndPath(commitLog.getCommitTime(), file.getPath()));
+            }
+        }
+
 
         // nested
         if (file.isDirectory()) {
@@ -83,6 +91,7 @@ public class RenameCmd {
                             .filter(childFile -> !childFile.getName().equals(".git"))
                             .forEach(childFile -> setPathWithDateAndMsg(childFile)));
         }
+
     }
 
     private void renameFiles(File file, String[] fileName) {

@@ -1,9 +1,12 @@
 package gitp.gitcustom.provider;
 
-import gitp.gitcustom.shell.data.DateAndPath;
-import gitp.gitcustom.shell.data.PathAndMessage;
+import gitp.gitcustom.provider.data.DateAndPath;
+import gitp.gitcustom.provider.data.PathAndMessage;
 import lombok.Data;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.springframework.shell.standard.ShellComponent;
 
 import java.io.File;
@@ -19,7 +22,6 @@ import java.util.PriorityQueue;
 public class GitDataProvider {
 
     private Git git;
-    private String branchName;
 
     /**
      * Store {@code DateAndPath} in ascending order based on the date.
@@ -36,7 +38,6 @@ public class GitDataProvider {
 
     public GitDataProvider(PathAndMessage pathAndMessages) throws IOException {
         this.git = Git.open(new File("."));
-        this.branchName = git.getRepository().getBranch();
 
         this.dateAndPathPQ = new PriorityQueue<>();
         this.pathAndMessages = pathAndMessages;

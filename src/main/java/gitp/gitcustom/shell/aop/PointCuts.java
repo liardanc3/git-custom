@@ -11,6 +11,4 @@ public class PointCuts {
     @Pointcut("@annotation(gitp.gitcustom.shell.aop.annotation.ExceptionAspect)")
     public void exception(){};
 
-    @Pointcut("@annotation(gitp.gitcustom.shell.aop.annotation.RetryTask)")
-    public void retryTask(){};
 }

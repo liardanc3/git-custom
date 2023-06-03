@@ -30,7 +30,7 @@ public class ShellProvider implements PromptProvider {
      * <p>{@link org.springframework.shell.result.ThrowableResultHandler}
      */
     @PostConstruct
-    public void shell() {
+    public void restrict() {
         CommandCatalog commandCatalog = applicationContext.getBean(CommandCatalog.class);
         commandCatalog.unregister("stacktrace");
     }
