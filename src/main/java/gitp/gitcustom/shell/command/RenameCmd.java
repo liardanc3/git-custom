@@ -156,8 +156,8 @@ public class RenameCmd {
                     .get(fileName.length == 2 ? filePath.replaceAll(fileName[1], fileName[0]) : filePath)
                     .replaceAll(commitMsg.length == 2 ? commitMsg[0] : "", commitMsg.length == 2 ? commitMsg[1] : "");
 
-            git.add().addFilepattern(filePath).call();
-            git.commit().setMessage(message).call();
+            git.add().addFilepattern(filePath).setUpdate(true).call();
+            git.commit().setMessage(message).setAll(true).call();
         }
     }
 }
