@@ -21,3 +21,4 @@
 1685786643628:rename --file a b
 1685862943914:rename --file mock fuck
 1685862998652:rename --file mock fock
+1685864387886:rename --msg mock fock

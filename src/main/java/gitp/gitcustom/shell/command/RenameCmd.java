@@ -105,7 +105,7 @@ public class RenameCmd {
         if(findFiles && file.getName().contains(fileName[0])){
             targetFiles.add(file);
         }
-        if(findCommits && pathAndMessages.get(file.getPath()).contains(commitMsg[0])){
+        if(findCommits && pathAndMessages.get(file.getPath()) != null && pathAndMessages.get(file.getPath()).contains(commitMsg[0])){
             targetFiles.add(file);
         }
 
@@ -139,12 +139,18 @@ public class RenameCmd {
         return bufferedReader.readLine().toLowerCase().charAt(0) == 'y';
     }
 
+    @SneakyThrows
     private void stageAndCommit(String[] fileName, String[] commitMsg){
         while(!dateAndPathPQ.isEmpty()){
-            String filePath = dateAndPathPQ.poll().getFilePath().replaceAll(fileName[0], fileName[1]);
-            String message = pathAndMessages.get(filePath).replaceAll(commitMsg[0], commitMsg[1]);
+            String filePath = dateAndPathPQ
+                    .poll()
+                    .getFilePath();
+            String message = pathAndMessages
+                    .get(fileName.length == 2 ? filePath.replaceAll(fileName[1], fileName[0]) : filePath)
+                    .replaceAll(commitMsg.length == 2 ? commitMsg[0] : "", commitMsg.length == 2 ? commitMsg[1] : "");
 
-
+            git.add().addFilepattern(filePath).call();
+            git.commit().setMessage(message).call();
         }
     }
 }
