@@ -69,7 +69,7 @@ public class RenameCmd {
         if(continueCheck()) {
             if(fileName.length == 2)
                 renameFiles(fileName, new File("."),"");
-
+            stageAndCommit(fileName, commitMsg);
         }
 
         afterTask();
@@ -118,12 +118,14 @@ public class RenameCmd {
 
     @SneakyThrows
     private void renameFiles(String[] fileName, File file, String path) {
-        file.renameTo(new File(path + file.getName().replaceAll(fileName[0], fileName[1])));
-
         if(file.isDirectory()){
             for (File childFile : file.listFiles()) {
-                renameFiles(fileName, file, path+"/");
+                renameFiles(fileName, childFile, path+file.getName()+"/");
             }
+        }
+
+        if(file.getName().contains(fileName[0])){
+            file.renameTo(new File(path + file.getName().replaceAll(fileName[0], fileName[1])));
         }
     }
 
@@ -135,5 +137,14 @@ public class RenameCmd {
         }
         System.out.print("\nWould you like to continue? (Y/N) : ");
         return bufferedReader.readLine().toLowerCase().charAt(0) == 'y';
+    }
+
+    private void stageAndCommit(String[] fileName, String[] commitMsg){
+        while(!dateAndPathPQ.isEmpty()){
+            String filePath = dateAndPathPQ.poll().getFilePath().replaceAll(fileName[0], fileName[1]);
+            String message = pathAndMessages.get(filePath).replaceAll(commitMsg[0], commitMsg[1]);
+
+
+        }
     }
 }

@@ -19,3 +19,5 @@
 1685783411631:git log -1
 1685783414008:git log
 1685786643628:rename --file a b
+1685862943914:rename --file mock fuck
+1685862998652:rename --file mock fock
