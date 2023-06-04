@@ -18,9 +18,7 @@ import org.springframework.shell.standard.ShellOption;
 import org.springframework.util.Assert;
 
 import javax.annotation.PostConstruct;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -38,6 +36,7 @@ public class RenameCmd {
     private PathAndMessage pathAndMessages;
     private List<File> targetFiles;
     private BufferedReader bufferedReader;
+    private ByteArrayOutputStream outputStream;
 
     @PostConstruct
     void init(){
@@ -46,6 +45,7 @@ public class RenameCmd {
         pathAndMessages = gitDataProvider.getPathAndMessages();
         targetFiles = new ArrayList<>();
         bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+        outputStream = new ByteArrayOutputStream();
     }
 
     void afterTask(){
@@ -76,6 +76,8 @@ public class RenameCmd {
             System.out.println("rename task Done.");
         }
         afterTask();
+
+        System.out.println(outputStream.toString());
     }
 
     @SneakyThrows
