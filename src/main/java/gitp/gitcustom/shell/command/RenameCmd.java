@@ -70,8 +70,8 @@ public class RenameCmd {
             if(fileName.length == 2)
                 renameFiles(fileName, new File("."),"");
             stageAndCommit(fileName, commitMsg);
+            git.push();
         }
-
         afterTask();
     }
 
