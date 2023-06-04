@@ -136,7 +136,7 @@ public class RenameCmd {
     private boolean continueCheck(){
         System.out.println("- target list -");
         for (File targetFile : targetFiles) {
-            System.out.println(">> file : " + targetFile.getPath() + "\n" + pathAndMessages.get(targetFile.getPath()) + "\n");
+            System.out.println(">> file : " + targetFile.getPath() + "\n" + pathAndMessages.get(targetFile.getPath()));
         }
         if(targetFiles.isEmpty()){
             System.out.println("\n There is no target.");
