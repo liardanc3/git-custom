@@ -6,8 +6,10 @@ import gitp.gitcustom.provider.data.DateAndPath;
 import gitp.gitcustom.provider.data.PathAndMessage;
 import gitp.gitcustom.shell.aop.exception.ArgumentException;
 import lombok.*;
+import org.apache.commons.io.FileUtils;
 import org.aspectj.apache.bcel.classfile.Constant;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -156,10 +158,15 @@ public class RenameCmd {
                     .getFilePath();
             String message = pathAndMessages
                     .get(fileName.length == 2 ? filePath.replaceAll(fileName[1], fileName[0]) : filePath)
-                    .replaceAll(commitMsg.length == 2 ? commitMsg[0] : "", commitMsg.length == 2 ? commitMsg[1] : "");
+                    .replaceAll(commitMsg.length == 2 ? commitMsg[0] : "__NONE__", commitMsg.length == 2 ? commitMsg[1] : "__NONE__");
 
-            git.add().addFilepattern(filePath).setUpdate(true).call();
-            git.commit().setMessage(message).setAll(true).call();
+            System.out.println("filePath = " + filePath);
+            System.out.println("message = " + message);
+
+            DirCache call = git.add().addFilepattern(filePath).call();
+            RevCommit call1 = git.commit().setMessage(message).call();
+
+            System.out.println("");
         }
     }
 }
