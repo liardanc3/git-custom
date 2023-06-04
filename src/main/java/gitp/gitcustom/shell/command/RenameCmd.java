@@ -53,7 +53,6 @@ public class RenameCmd {
         pathAndMessages.clear();
         targetFiles.clear();
 
-        System.out.println("rename task Done.");
     }
 
     @ExceptionAspect
@@ -73,6 +72,8 @@ public class RenameCmd {
                 renameFiles(fileName, new File("."),"");
             stageAndCommit(fileName, commitMsg);
             git.push();
+
+            System.out.println("rename task Done.");
         }
         afterTask();
     }
@@ -136,6 +137,10 @@ public class RenameCmd {
         System.out.println("- target list -");
         for (File targetFile : targetFiles) {
             System.out.println(">> file : " + targetFile.getPath() + "\n" + pathAndMessages.get(targetFile.getPath()) + "\n");
+        }
+        if(targetFiles.isEmpty()){
+            System.out.println("\n There is no target.");
+            return false;
         }
         System.out.print("\nWould you like to continue? (Y/N) : ");
         return bufferedReader.readLine().toLowerCase().charAt(0) == 'y';
