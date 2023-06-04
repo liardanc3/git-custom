@@ -1,6 +1,8 @@
 package gitp.gitcustom.shell.command;
 
 import gitp.gitcustom.provider.GitDataProvider;
+import gitp.gitcustom.provider.ShellProvider;
+import gitp.gitcustom.provider.data.UserInfo;
 import gitp.gitcustom.shell.aop.annotation.ExceptionAspect;
 import gitp.gitcustom.provider.data.DateAndPath;
 import gitp.gitcustom.provider.data.PathAndMessage;
@@ -9,10 +11,13 @@ import lombok.*;
 import org.apache.commons.io.FileUtils;
 import org.aspectj.apache.bcel.classfile.Constant;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.transport.CredentialsProvider;
+import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
@@ -38,16 +43,15 @@ public class RenameCmd {
     private PathAndMessage pathAndMessages;
     private List<File> targetFiles;
     private BufferedReader bufferedReader;
-    private ByteArrayOutputStream outputStream;
 
     @PostConstruct
+    @SneakyThrows
     void init(){
         git = gitDataProvider.getGit();
         dateAndPathPQ = gitDataProvider.getDateAndPathPQ();
         pathAndMessages = gitDataProvider.getPathAndMessages();
         targetFiles = new ArrayList<>();
         bufferedReader = new BufferedReader(new InputStreamReader(System.in));
-        outputStream = new ByteArrayOutputStream();
     }
 
     void afterTask(){
@@ -68,18 +72,30 @@ public class RenameCmd {
         setPathWithDateAndMsg(new File("."), ".");
         findTargetFiles(new File("."), fileName, commitMsg, fileName.length == 2, commitMsg.length == 2);
 
-        // show target
         if(continueCheck()) {
             if(fileName.length == 2)
                 renameFiles(fileName, new File("."),"");
-            stageAndCommit(fileName, commitMsg);
-            git.push();
 
-            System.out.println("rename task Done.");
+            stageAndCommit(fileName, commitMsg);
+            System.out.println("Please push manually. Or you can use the \'push\' command with enter an Access Token.");
         }
         afterTask();
+    }
 
-        System.out.println(outputStream.toString());
+    @ShellMethod
+    @SneakyThrows
+    private void push() {
+        System.out.print("Enter git user name : ");
+        String userName = bufferedReader.readLine();
+
+        System.out.print("Enter git password : ");
+        String password = bufferedReader.readLine();
+
+        CredentialsProvider credentialsProvider =
+                new UsernamePasswordCredentialsProvider(userName, password);
+
+        git.push().setCredentialsProvider(credentialsProvider).call();
+        System.out.println("Push Complete");
     }
 
     @SneakyThrows
@@ -147,7 +163,7 @@ public class RenameCmd {
             return false;
         }
         System.out.print("Would you like to continue? (Y/N) : ");
-        return bufferedReader.readLine().toLowerCase().charAt(0) == 'y';
+        return new BufferedReader(new InputStreamReader(System.in)).readLine().toLowerCase().charAt(0) == 'y';
     }
 
     @SneakyThrows
@@ -160,13 +176,8 @@ public class RenameCmd {
                     .get(fileName.length == 2 ? filePath.replaceAll(fileName[1], fileName[0]) : filePath)
                     .replaceAll(commitMsg.length == 2 ? commitMsg[0] : "__NONE__", commitMsg.length == 2 ? commitMsg[1] : "__NONE__");
 
-            System.out.println("filePath = " + filePath);
-            System.out.println("message = " + message);
-
-            DirCache call = git.add().addFilepattern(filePath).call();
-            RevCommit call1 = git.commit().setMessage(message).call();
-
-            System.out.println("");
+            git.add().addFilepattern(filePath).call();
+            git.commit().setMessage(message).call();
         }
     }
 }

@@ -41,8 +41,5 @@ class RenameCmdTest {
                 .iterator().next();
 
         System.out.println("next.getFullMessage() = " + revCommit.getFullMessage());
-
-        // 커밋 로그 가져오기
-
     }
 }
