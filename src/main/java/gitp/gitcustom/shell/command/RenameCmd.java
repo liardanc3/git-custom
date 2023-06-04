@@ -52,6 +52,8 @@ public class RenameCmd {
         dateAndPathPQ.clear();
         pathAndMessages.clear();
         targetFiles.clear();
+
+        System.out.println("rename task Done.");
     }
 
     @ExceptionAspect
