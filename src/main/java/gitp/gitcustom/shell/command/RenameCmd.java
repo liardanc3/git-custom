@@ -7,7 +7,10 @@ import gitp.gitcustom.provider.data.PathAndMessage;
 import gitp.gitcustom.shell.aop.exception.ArgumentException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.aspectj.apache.bcel.classfile.Constant;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.shell.standard.ShellComponent;
@@ -46,7 +49,7 @@ public class RenameCmd {
 
         Assert.isTrue(fileName.length == 2 || commitMsg.length == 2, () -> {throw new ArgumentException();});
 
-        setPathWithDateAndMsg(new File("."));
+        setPathWithDateAndMsg(new File("."), ".");
 
         // file rename
         if(fileName.length == 2){
@@ -61,17 +64,14 @@ public class RenameCmd {
     }
 
     @SneakyThrows
-    private void setPathWithDateAndMsg(File file) {
-        System.out.println("file.getName() = " + file.getName());
+    private void setPathWithDateAndMsg(File file, String filePath) {
+        System.out.println("filePath = " + filePath);
 
-
-        // TODO - get log
-        if(!file.getPath().equals(".")){
-            System.out.println("file.getPath() = " + file.getPath().substring(2));
+        if(!filePath.equals(".")){
             RevCommit commitLog = git
                     .log()
-                    .add(git.getRepository().resolve("HEAD"))
-                    .addPath(file.getPath().substring(2))
+                    .add(git.getRepository().resolve(Constants.HEAD))
+                    .addPath(filePath.substring(1))
                     .setMaxCount(1)
                     .call()
                     .iterator().next();
@@ -83,15 +83,13 @@ public class RenameCmd {
             }
         }
 
-
         // nested
         if (file.isDirectory()) {
             Optional.ofNullable(file.listFiles())
                     .ifPresent(childFiles -> Arrays.stream(childFiles)
                             .filter(childFile -> !childFile.getName().equals(".git"))
-                            .forEach(childFile -> setPathWithDateAndMsg(childFile)));
+                            .forEach(childFile -> setPathWithDateAndMsg(childFile, filePath + childFile.getName() + "/")));
         }
-
     }
 
     private void renameFiles(File file, String[] fileName) {
