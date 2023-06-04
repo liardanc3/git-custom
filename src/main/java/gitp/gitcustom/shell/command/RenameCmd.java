@@ -142,7 +142,7 @@ public class RenameCmd {
             System.out.println("\n There is no target.");
             return false;
         }
-        System.out.print("\nWould you like to continue? (Y/N) : ");
+        System.out.print("Would you like to continue? (Y/N) : ");
         return bufferedReader.readLine().toLowerCase().charAt(0) == 'y';
     }
 
