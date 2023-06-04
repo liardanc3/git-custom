@@ -5,8 +5,7 @@ import gitp.gitcustom.shell.aop.annotation.ExceptionAspect;
 import gitp.gitcustom.provider.data.DateAndPath;
 import gitp.gitcustom.provider.data.PathAndMessage;
 import gitp.gitcustom.shell.aop.exception.ArgumentException;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
+import lombok.*;
 import org.aspectj.apache.bcel.classfile.Constant;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Constants;
@@ -19,10 +18,13 @@ import org.springframework.shell.standard.ShellOption;
 import org.springframework.util.Assert;
 
 import javax.annotation.PostConstruct;
+import java.io.BufferedReader;
 import java.io.File;
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.PriorityQueue;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.*;
 
 @ShellComponent
 @RequiredArgsConstructor
@@ -34,39 +36,47 @@ public class RenameCmd {
     private Git git;
     private PriorityQueue<DateAndPath> dateAndPathPQ;
     private PathAndMessage pathAndMessages;
+    private List<File> targetFiles;
+    private BufferedReader bufferedReader;
 
     @PostConstruct
     void init(){
         git = gitDataProvider.getGit();
         dateAndPathPQ = gitDataProvider.getDateAndPathPQ();
         pathAndMessages = gitDataProvider.getPathAndMessages();
+        targetFiles = new ArrayList<>();
+        bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+    }
+
+    void afterTask(){
+        dateAndPathPQ.clear();
+        pathAndMessages.clear();
+        targetFiles.clear();
     }
 
     @ExceptionAspect
     @ShellMethod("rename")
+    @SneakyThrows
     public void rename(@ShellOption(value = {"--file"}, arity = 2, defaultValue = "!n") String fileName[],
                        @ShellOption(value = {"--msg"}, arity = 2, defaultValue = "!n") String commitMsg[]) {
 
         Assert.isTrue(fileName.length == 2 || commitMsg.length == 2, () -> {throw new ArgumentException();});
 
         setPathWithDateAndMsg(new File("."), ".");
+        findTargetFiles(new File("."), fileName, commitMsg, fileName.length == 2, commitMsg.length == 2);
 
-        // file rename
-        if(fileName.length == 2){
-           // renameFiles(new File("."), fileName);
-        }
-
-        // message edit
-        if(commitMsg.length == 2){
+        // show target
+        if(continueCheck()) {
+            if(fileName.length == 2)
+                renameFiles(fileName, new File("."),"");
 
         }
 
+        afterTask();
     }
 
     @SneakyThrows
     private void setPathWithDateAndMsg(File file, String filePath) {
-        System.out.println("filePath = " + filePath);
-
         if(!filePath.equals(".")){
             RevCommit commitLog = git
                     .log()
@@ -77,7 +87,6 @@ public class RenameCmd {
                     .iterator().next();
 
             if(commitLog != null) {
-                System.out.println("commitLog = " + commitLog.getFullMessage());
                 pathAndMessages.put(file.getPath(), commitLog.getFullMessage());
                 dateAndPathPQ.add(new DateAndPath(commitLog.getCommitTime(), file.getPath()));
             }
@@ -92,16 +101,39 @@ public class RenameCmd {
         }
     }
 
-    private void renameFiles(File file, String[] fileName) {
-        if(file.getName().contains(".idea"))
-            return;
-
-        file.renameTo(new File(file.getPath().replaceAll(fileName[0], fileName[1])));
+    private void findTargetFiles(File file, String[] fileName, String[] commitMsg, boolean findFiles, boolean findCommits){
+        if(findFiles && file.getName().contains(fileName[0])){
+            targetFiles.add(file);
+        }
+        if(findCommits && pathAndMessages.get(file.getPath()).contains(commitMsg[0])){
+            targetFiles.add(file);
+        }
 
         if(file.isDirectory() && file.listFiles().length > 0) {
             for (File childFile : file.listFiles()) {
-                renameFiles(childFile, fileName);
+                findTargetFiles(childFile, fileName, commitMsg, findFiles, findCommits);
             }
         }
+    }
+
+    @SneakyThrows
+    private void renameFiles(String[] fileName, File file, String path) {
+        file.renameTo(new File(path + file.getName().replaceAll(fileName[0], fileName[1])));
+
+        if(file.isDirectory()){
+            for (File childFile : file.listFiles()) {
+                renameFiles(fileName, file, path+"/");
+            }
+        }
+    }
+
+    @SneakyThrows
+    private boolean continueCheck(){
+        System.out.println("- target list -");
+        for (File targetFile : targetFiles) {
+            System.out.println(">> file : " + targetFile.getPath() + "\n" + pathAndMessages.get(targetFile.getPath()) + "\n");
+        }
+        System.out.print("\nWould you like to continue? (Y/N) : ");
+        return bufferedReader.readLine().toLowerCase().charAt(0) == 'y';
     }
 }
