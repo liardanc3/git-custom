@@ -1,7 +1,7 @@
 package gitp.gitcustom.provider;
 
 import gitp.gitcustom.provider.data.DateAndPath;
-import gitp.gitcustom.provider.data.PathAndMessage;
+import gitp.gitcustom.provider.data.PathAndCommit;
 import lombok.Data;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Repository;
@@ -33,13 +33,13 @@ public class GitDataProvider {
      * {@code LinkedHashMap} storing file paths and messages.
      * <p>Used in {@link gitp.gitcustom.shell.command.RenameCmd}
      */
-    private PathAndMessage pathAndMessages;
+    private PathAndCommit PathAndCommits;
 
 
-    public GitDataProvider(PathAndMessage pathAndMessages) throws IOException {
+    public GitDataProvider(PathAndCommit PathAndCommits) throws IOException {
         this.git = Git.open(new File("."));
 
         this.dateAndPathPQ = new PriorityQueue<>();
-        this.pathAndMessages = pathAndMessages;
+        this.PathAndCommits = PathAndCommits;
     }
 }

@@ -1,94 +1,76 @@
 package gitp.gitcustom.shell.command;
 
 import gitp.gitcustom.provider.GitDataProvider;
+import gitp.gitcustom.provider.ShellProvider;
 import gitp.gitcustom.shell.aop.annotation.ExceptionAspect;
 import gitp.gitcustom.provider.data.DateAndPath;
-import gitp.gitcustom.provider.data.PathAndMessage;
+import gitp.gitcustom.provider.data.PathAndCommit;
 import gitp.gitcustom.shell.aop.exception.ArgumentException;
 import lombok.*;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.transport.CredentialsProvider;
-import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
 import org.springframework.util.Assert;
 
-import javax.annotation.PostConstruct;
 import java.io.*;
 import java.util.*;
 
 @ShellComponent
 @RequiredArgsConstructor
 @Lazy
-public class RenameCmd {
+public class RenameCmd implements Command{
 
     private final GitDataProvider gitDataProvider;
+    private final ShellProvider shellProvider;
 
     private Git git;
+    private BufferedReader reader;
     private PriorityQueue<DateAndPath> dateAndPathPQ;
-    private PathAndMessage pathAndMessages;
+    private PathAndCommit PathAndCommits;
     private List<File> targetFiles;
-    private BufferedReader bufferedReader;
 
-    @PostConstruct
-    @SneakyThrows
-    void init(){
+    @Override
+    public void init(){
         git = gitDataProvider.getGit();
+        reader = shellProvider.getBufferedReader();
         dateAndPathPQ = gitDataProvider.getDateAndPathPQ();
-        pathAndMessages = gitDataProvider.getPathAndMessages();
+        PathAndCommits = gitDataProvider.getPathAndCommits();
         targetFiles = new ArrayList<>();
-        bufferedReader = new BufferedReader(new InputStreamReader(System.in));
     }
 
-    void afterTask(){
+    @Override
+    public void afterTask(){
         dateAndPathPQ.clear();
-        pathAndMessages.clear();
+        PathAndCommits.clear();
         targetFiles.clear();
     }
 
     @ExceptionAspect
     @ShellMethod("rename")
     @SneakyThrows
-    public void rename(@ShellOption(value = {"--file"}, arity = 2, defaultValue = "!n") String fileName[],
-                       @ShellOption(value = {"--msg"}, arity = 2, defaultValue = "!n") String commitMsg[]) {
+    public void rename(@ShellOption(value = {"--file"}, arity = 2, defaultValue = "!n") String fileName[]) {
 
-        Assert.isTrue(fileName.length == 2 || commitMsg.length == 2, () -> {throw new ArgumentException();});
+        Assert.isTrue(fileName.length == 2, () -> {throw new ArgumentException();});
 
-        setPathWithDateAndMsg(new File("."), ".");
-        findTargetFiles(new File("."), fileName, commitMsg, fileName.length == 2, commitMsg.length == 2);
+        setPathWithDateAndCommit(new File("."), ".");
+        findTargetFiles(new File("."), fileName);
 
         if(continueCheck()) {
             if(fileName.length == 2)
                 renameFiles(fileName, new File("."),"");
 
-            stageAndCommit(fileName, commitMsg);
+            stageAndCommit(fileName);
             System.out.println("Commit complete and plz push manually. Or you can use the \'push\' command with enter an Access Token.");
         }
         afterTask();
     }
 
-    @ShellMethod
     @SneakyThrows
-    private void push() {
-        System.out.print("Enter git user name : ");
-        String userName = bufferedReader.readLine();
-
-        System.out.print("Enter git password : ");
-        String password = bufferedReader.readLine();
-
-        CredentialsProvider credentialsProvider =
-                new UsernamePasswordCredentialsProvider(userName, password);
-
-        git.push().setCredentialsProvider(credentialsProvider).call();
-        System.out.println("Push Complete");
-    }
-
-    @SneakyThrows
-    private void setPathWithDateAndMsg(File file, String filePath) {
+    private void setPathWithDateAndCommit(File file, String filePath) {
         if(!filePath.equals(".")){
             RevCommit commitLog = git
                     .log()
@@ -99,7 +81,7 @@ public class RenameCmd {
                     .iterator().next();
 
             if(commitLog != null) {
-                pathAndMessages.put(file.getPath(), commitLog.getFullMessage());
+                PathAndCommits.put(file.getPath(), commitLog);
                 dateAndPathPQ.add(new DateAndPath(commitLog.getCommitTime(), file.getPath()));
             }
         }
@@ -109,21 +91,18 @@ public class RenameCmd {
             Optional.ofNullable(file.listFiles())
                     .ifPresent(childFiles -> Arrays.stream(childFiles)
                             .filter(childFile -> !childFile.getName().equals(".git"))
-                            .forEach(childFile -> setPathWithDateAndMsg(childFile, filePath + childFile.getName() + "/")));
+                            .forEach(childFile -> setPathWithDateAndCommit(childFile, filePath + childFile.getName() + "/")));
         }
     }
 
-    private void findTargetFiles(File file, String[] fileName, String[] commitMsg, boolean findFiles, boolean findCommits){
-        if(findFiles && file.getName().contains(fileName[0])){
-            targetFiles.add(file);
-        }
-        if(findCommits && pathAndMessages.get(file.getPath()) != null && pathAndMessages.get(file.getPath()).contains(commitMsg[0])){
+    private void findTargetFiles(File file, String[] fileName){
+        if(file.getName().contains(fileName[0])){
             targetFiles.add(file);
         }
 
         if(file.isDirectory() && file.listFiles().length > 0) {
             for (File childFile : file.listFiles()) {
-                findTargetFiles(childFile, fileName, commitMsg, findFiles, findCommits);
+                findTargetFiles(childFile, fileName);
             }
         }
     }
@@ -145,25 +124,25 @@ public class RenameCmd {
     private boolean continueCheck(){
         System.out.println("- target list -");
         for (File targetFile : targetFiles) {
-            System.out.println(">> file : " + targetFile.getPath() + "\n" + pathAndMessages.get(targetFile.getPath()));
+            System.out.println(">> file : " + targetFile.getPath() + "\n" + PathAndCommits.get(targetFile.getPath()));
         }
         if(targetFiles.isEmpty()){
             System.out.println("There is no target.");
             return false;
         }
         System.out.print("Would you like to continue? (Y/N) : ");
-        return new BufferedReader(new InputStreamReader(System.in)).readLine().toLowerCase().charAt(0) == 'y';
+        return reader.readLine().toLowerCase().charAt(0) == 'y';
     }
 
     @SneakyThrows
-    private void stageAndCommit(String[] fileName, String[] commitMsg){
+    private void stageAndCommit(String[] fileName){
         while(!dateAndPathPQ.isEmpty()){
             String filePath = dateAndPathPQ
                     .poll()
                     .getFilePath();
-            String message = pathAndMessages
+            String message = PathAndCommits
                     .get(fileName.length == 2 ? filePath.replaceAll(fileName[1], fileName[0]) : filePath)
-                    .replaceAll(commitMsg.length == 2 ? commitMsg[0] : "__NONE__", commitMsg.length == 2 ? commitMsg[1] : "__NONE__");
+                    .getFullMessage();
 
             git.add().addFilepattern(filePath).call();
             git.commit().setMessage(message).setAllowEmpty(true).call();

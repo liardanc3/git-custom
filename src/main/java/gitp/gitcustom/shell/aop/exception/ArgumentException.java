@@ -6,7 +6,7 @@ public class ArgumentException extends RuntimeException {
 
     @Override
     public String toString(){
-        return "ArgsExceppppppp";
+        return "The argument was not passed correctly. Please check and try again.";
     }
 
     @Override
