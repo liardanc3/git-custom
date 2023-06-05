@@ -1,6 +1,8 @@
 package gitp.gitcustom.shell.command;
 
+import gitp.gitcustom.provider.GitDataProvider;
 import gitp.gitcustom.shell.aop.annotation.ExceptionAspect;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.transport.CredentialsProvider;
@@ -9,16 +11,21 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 
+import javax.annotation.PostConstruct;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
 @ShellComponent
+@RequiredArgsConstructor
 @Lazy
 public class PushCommand implements Command{
+
+    private final GitDataProvider gitDataProvider;
 
     private Git git;
     private BufferedReader reader;
 
+    @PostConstruct
     @Override
     public void init() {
         git = gitDataProvider.getGit();

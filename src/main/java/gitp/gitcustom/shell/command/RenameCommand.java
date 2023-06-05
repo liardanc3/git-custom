@@ -16,6 +16,7 @@ import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
 import org.springframework.util.Assert;
 
+import javax.annotation.PostConstruct;
 import java.io.*;
 import java.util.*;
 
@@ -32,12 +33,13 @@ public class RenameCommand implements Command{
     private PathAndCommit PathAndCommits;
     private List<File> targetFiles;
 
+    @PostConstruct
     @Override
     public void init(){
         git = gitDataProvider.getGit();
         reader = new BufferedReader(new InputStreamReader(System.in));
         dateAndPathPQ = gitDataProvider.getDateAndPathPQ();
-        PathAndCommits = gitDataProvider.getPathAndCommits();
+        PathAndCommits = gitDataProvider.getPathAndCommit();
         targetFiles = new ArrayList<>();
     }
 
@@ -121,9 +123,9 @@ public class RenameCommand implements Command{
 
     @SneakyThrows
     private boolean continueCheck(){
-        System.out.println("- target list -");
+        System.out.println("\n  --- target list ----\n");
         for (File targetFile : targetFiles) {
-            System.out.println(">> file : " + targetFile.getPath() + "\n" + PathAndCommits.get(targetFile.getPath()));
+            System.out.println(">> file : " + targetFile.getPath() + "\n" + PathAndCommits.get(targetFile.getPath()).getFullMessage());
         }
         if(targetFiles.isEmpty()){
             System.out.println("There is no target.");

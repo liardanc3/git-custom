@@ -4,9 +4,12 @@ import gitp.gitcustom.provider.data.DateAndPath;
 import gitp.gitcustom.provider.data.PathAndCommit;
 import gitp.gitcustom.shell.command.RenameCommand;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.eclipse.jgit.api.Git;
-import org.springframework.shell.standard.ShellComponent;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.util.PriorityQueue;
@@ -15,11 +18,16 @@ import java.util.PriorityQueue;
  * GitManager provides git connection and data.
  * <p>Injected to classes in {@link gitp.gitcustom.shell.command}
  */
-@ShellComponent
+@Component
+@RequiredArgsConstructor
 @Data
 public class GitDataProvider {
 
-    private Git git;
+    /**
+     * {@code LinkedHashMap} storing file paths and messages.
+     * <p>Used in {@link RenameCommand}
+     */
+    private final PathAndCommit pathAndCommit;
 
     /**
      * Store {@code DateAndPath} in ascending order based on the date.
@@ -27,17 +35,12 @@ public class GitDataProvider {
      */
     private PriorityQueue<DateAndPath> dateAndPathPQ;
 
-    /**
-     * {@code LinkedHashMap} storing file paths and messages.
-     * <p>Used in {@link RenameCommand}
-     */
-    private PathAndCommit PathAndCommits;
+    private Git git;
 
-
-    public GitDataProvider(PathAndCommit PathAndCommits) throws IOException {
+    @PostConstruct
+    @SneakyThrows
+    void init(){
         this.git = Git.open(new File("."));
-
         this.dateAndPathPQ = new PriorityQueue<>();
-        this.PathAndCommits = PathAndCommits;
     }
 }
