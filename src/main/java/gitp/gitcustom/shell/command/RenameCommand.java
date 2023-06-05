@@ -150,18 +150,12 @@ public class RenameCommand implements Command{
                     .getFullMessage();
 
             System.out.println(filePath);
-            if(filePath.contains("mock")){
-                System.out.println("stop");
-            }
-            //WinNTFileSystem winNTFileSystem = new WinNTFileSystem();
+
             File target = new File(filePath.replaceAll(fileName[0], fileName[1]));
             target.setLastModified(System.currentTimeMillis());
-            DirCache call = git.add().addFilepattern(filePath
-                            .replaceAll(fileName[0], fileName[1])
-                            .replaceAll("\\\\", "/").substring(1))
-                    .call();
-            RevCommit call1 = git.commit().setMessage(message).call();
-            System.out.println(".");
+
+            git.add().addFilepattern(target.getPath()).call();
+            git.commit().setMessage(message).call();
         }
     }
 }
