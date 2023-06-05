@@ -142,10 +142,10 @@ public class RenameCommand implements Command{
                     .poll()
                     .getFilePath();
             String message = PathAndCommits
-                    .get(fileName.length == 2 ? filePath.replaceAll(fileName[1], fileName[0]) : filePath)
+                    .get(filePath)
                     .getFullMessage();
 
-            git.add().addFilepattern(filePath).call();
+            git.add().addFilepattern(filePath.replaceAll(fileName[0], fileName[1])).call();
             git.commit().setMessage(message).setAllowEmpty(true).call();
         }
     }
