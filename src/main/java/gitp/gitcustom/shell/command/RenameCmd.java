@@ -1,20 +1,13 @@
 package gitp.gitcustom.shell.command;
 
 import gitp.gitcustom.provider.GitDataProvider;
-import gitp.gitcustom.provider.ShellProvider;
-import gitp.gitcustom.provider.data.UserInfo;
 import gitp.gitcustom.shell.aop.annotation.ExceptionAspect;
 import gitp.gitcustom.provider.data.DateAndPath;
 import gitp.gitcustom.provider.data.PathAndMessage;
 import gitp.gitcustom.shell.aop.exception.ArgumentException;
 import lombok.*;
-import org.apache.commons.io.FileUtils;
-import org.aspectj.apache.bcel.classfile.Constant;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
@@ -26,9 +19,6 @@ import org.springframework.util.Assert;
 
 import javax.annotation.PostConstruct;
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 @ShellComponent
@@ -58,7 +48,6 @@ public class RenameCmd {
         dateAndPathPQ.clear();
         pathAndMessages.clear();
         targetFiles.clear();
-
     }
 
     @ExceptionAspect
@@ -77,7 +66,7 @@ public class RenameCmd {
                 renameFiles(fileName, new File("."),"");
 
             stageAndCommit(fileName, commitMsg);
-            System.out.println("Please push manually. Or you can use the \'push\' command with enter an Access Token.");
+            System.out.println("Commit complete and plz push manually. Or you can use the \'push\' command with enter an Access Token.");
         }
         afterTask();
     }
