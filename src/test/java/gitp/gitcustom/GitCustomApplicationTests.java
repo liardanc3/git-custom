@@ -1,6 +1,5 @@
 package gitp.gitcustom;
 
-import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
 import org.eclipse.jgit.api.Git;
 import org.junit.jupiter.api.Test;
