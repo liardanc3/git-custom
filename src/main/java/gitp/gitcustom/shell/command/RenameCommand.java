@@ -7,6 +7,7 @@ import gitp.gitcustom.provider.data.DateAndPath;
 import gitp.gitcustom.provider.data.PathAndCommit;
 import gitp.gitcustom.shell.aop.exception.ArgumentException;
 import lombok.*;
+import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.lib.Constants;
@@ -66,8 +67,7 @@ public class RenameCommand implements Command{
         findTargetFiles(new File("."), fileName);
 
         if(continueCheck()) {
-            if(fileName.length == 2)
-                renameFiles(fileName, new File("."),"");
+            //renameFiles(fileName, new File("."),"");
 
             stageAndCommit(fileName);
             System.out.println("Commit complete and plz push manually. Or you can use the \'push\' command with enter an Access Token.");
@@ -153,14 +153,23 @@ public class RenameCommand implements Command{
 
             System.out.println(filePath);
 
-            File target = new File(filePath.replaceAll(fileName[0], fileName[1]));
-            if(target.getPath().contains("fock")){
+            File oldFile = new File(filePath);
+            if (oldFile.isDirectory()) {
+                FileUtils.deleteDirectory(oldFile);
+            } else {
+                FileUtils.delete(oldFile);
+            }
+
+            File newFile = new File(filePath.replaceAll(fileName[0], fileName[1]));
+            newFile.createNewFile();
+
+            if(newFile.getPath().contains("fock")){
                 System.out.println(".");
             }
-            target.setLastModified(System.currentTimeMillis());
 
-            git.add().addFilepattern(target.getPath()).call();
-            git.rm().addFilepattern(filePath);
+
+            git.add().addFilepattern(newFile.getPath()).call();
+            git.rm().addFilepattern(oldFile.getPath());
             git.commit().setMessage(message).call();
         }
     }
