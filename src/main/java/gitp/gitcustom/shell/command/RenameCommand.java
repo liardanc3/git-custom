@@ -21,6 +21,7 @@ import org.springframework.util.FileSystemUtils;
 import javax.annotation.PostConstruct;
 import java.io.*;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.*;
 
@@ -121,7 +122,7 @@ public class RenameCommand implements Command{
         }
 
         if(file.getName().contains(fileName[0])){
-            file.renameTo(new File(path + file.getName().replaceAll(fileName[0], fileName[1])));
+            Files.move(file.toPath(), new File(path + file.getName().replaceAll(fileName[0], fileName[1])).toPath());
         }
     }
 
