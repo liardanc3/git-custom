@@ -23,9 +23,10 @@ public class ShellProvider implements PromptProvider {
      */
     @Override
     public AttributedString getPrompt() {
-        return new AttributedString("흑...흑흑...흑흑흑..흑 > ",
-                AttributedStyle.DEFAULT.foreground(AttributedStyle.MAGENTA));
+        return new AttributedString("git-custom > ",
+                AttributedStyle.DEFAULT.foreground(AttributedStyle.YELLOW));
     }
+
 
     /**
      * Restricts access to the line 79 of
