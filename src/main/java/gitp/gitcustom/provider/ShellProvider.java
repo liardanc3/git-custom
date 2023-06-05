@@ -1,7 +1,6 @@
 package gitp.gitcustom.provider;
 
 import lombok.Data;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStyle;
@@ -11,8 +10,6 @@ import org.springframework.shell.jline.PromptProvider;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 
 @Component
 @RequiredArgsConstructor
@@ -20,7 +17,6 @@ import java.io.InputStreamReader;
 public class ShellProvider implements PromptProvider {
 
     private final ApplicationContext applicationContext;
-    private BufferedReader bufferedReader;
 
     /**
      * Set shell input form
@@ -32,13 +28,11 @@ public class ShellProvider implements PromptProvider {
     }
 
     /**
-     * Set {@code bufferedReader} and Restricts access to the line 79 of
+     * Restricts access to the line 79 of
      * <p>{@link org.springframework.shell.result.ThrowableResultHandler}
      */
     @PostConstruct
     public void init() {
-        bufferedReader = new BufferedReader(new InputStreamReader(System.in));
-
         CommandCatalog commandCatalog = applicationContext.getBean(CommandCatalog.class);
         commandCatalog.unregister("stacktrace");
     }

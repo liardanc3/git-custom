@@ -2,11 +2,9 @@ package gitp.gitcustom.provider;
 
 import gitp.gitcustom.provider.data.DateAndPath;
 import gitp.gitcustom.provider.data.PathAndCommit;
+import gitp.gitcustom.shell.command.RenameCommand;
 import lombok.Data;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.RevWalk;
-import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.springframework.shell.standard.ShellComponent;
 
 import java.io.File;
@@ -25,13 +23,13 @@ public class GitDataProvider {
 
     /**
      * Store {@code DateAndPath} in ascending order based on the date.
-     * <p>Used in {@link gitp.gitcustom.shell.command.RenameCmd}
+     * <p>Used in {@link RenameCommand}
      */
     private PriorityQueue<DateAndPath> dateAndPathPQ;
 
     /**
      * {@code LinkedHashMap} storing file paths and messages.
-     * <p>Used in {@link gitp.gitcustom.shell.command.RenameCmd}
+     * <p>Used in {@link RenameCommand}
      */
     private PathAndCommit PathAndCommits;
 

@@ -22,10 +22,9 @@ import java.util.*;
 @ShellComponent
 @RequiredArgsConstructor
 @Lazy
-public class RenameCmd implements Command{
+public class RenameCommand implements Command{
 
     private final GitDataProvider gitDataProvider;
-    private final ShellProvider shellProvider;
 
     private Git git;
     private BufferedReader reader;
@@ -36,7 +35,7 @@ public class RenameCmd implements Command{
     @Override
     public void init(){
         git = gitDataProvider.getGit();
-        reader = shellProvider.getBufferedReader();
+        reader = new BufferedReader(new InputStreamReader(System.in));
         dateAndPathPQ = gitDataProvider.getDateAndPathPQ();
         PathAndCommits = gitDataProvider.getPathAndCommits();
         targetFiles = new ArrayList<>();

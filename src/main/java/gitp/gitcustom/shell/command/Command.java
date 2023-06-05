@@ -15,7 +15,6 @@ public interface Command {
     ShellProvider shellProvider = null;
 
     @PostConstruct
-    @SneakyThrows
     void init();
 
     void afterTask();
