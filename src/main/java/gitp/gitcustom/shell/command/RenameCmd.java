@@ -148,7 +148,7 @@ public class RenameCmd {
             System.out.println(">> file : " + targetFile.getPath() + "\n" + pathAndMessages.get(targetFile.getPath()));
         }
         if(targetFiles.isEmpty()){
-            System.out.println("\n There is no target.");
+            System.out.println("There is no target.");
             return false;
         }
         System.out.print("Would you like to continue? (Y/N) : ");
@@ -166,7 +166,7 @@ public class RenameCmd {
                     .replaceAll(commitMsg.length == 2 ? commitMsg[0] : "__NONE__", commitMsg.length == 2 ? commitMsg[1] : "__NONE__");
 
             git.add().addFilepattern(filePath).call();
-            git.commit().setMessage(message).call();
+            git.commit().setMessage(message).setAllowEmpty(true).call();
         }
     }
 }
