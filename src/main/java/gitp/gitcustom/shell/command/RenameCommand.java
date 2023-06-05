@@ -8,6 +8,7 @@ import gitp.gitcustom.provider.data.PathAndCommit;
 import gitp.gitcustom.shell.aop.exception.ArgumentException;
 import lombok.*;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.springframework.context.annotation.Lazy;
@@ -15,9 +16,12 @@ import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
 import org.springframework.util.Assert;
+import org.springframework.util.FileSystemUtils;
 
 import javax.annotation.PostConstruct;
 import java.io.*;
+import java.nio.file.FileSystems;
+import java.nio.file.spi.FileSystemProvider;
 import java.util.*;
 
 @ShellComponent
@@ -145,8 +149,19 @@ public class RenameCommand implements Command{
                     .get(filePath)
                     .getFullMessage();
 
-            git.add().addFilepattern(filePath.replaceAll(fileName[0], fileName[1])).call();
-            git.commit().setMessage(message).setAllowEmpty(true).call();
+            System.out.println(filePath);
+            if(filePath.contains("mock")){
+                System.out.println("stop");
+            }
+            //WinNTFileSystem winNTFileSystem = new WinNTFileSystem();
+            File target = new File(filePath.replaceAll(fileName[0], fileName[1]));
+            target.setLastModified(System.currentTimeMillis());
+            DirCache call = git.add().addFilepattern(filePath
+                            .replaceAll(fileName[0], fileName[1])
+                            .replaceAll("\\\\", "/").substring(1))
+                    .call();
+            RevCommit call1 = git.commit().setMessage(message).call();
+            System.out.println(".");
         }
     }
 }
