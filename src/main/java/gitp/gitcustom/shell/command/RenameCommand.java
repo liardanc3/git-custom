@@ -142,6 +142,7 @@ public class RenameCommand implements Command{
 
     @SneakyThrows
     private void stageAndCommit(String[] fileName){
+        git.log();
         while(!dateAndPathPQ.isEmpty()){
             String filePath = dateAndPathPQ
                     .poll()
@@ -153,9 +154,13 @@ public class RenameCommand implements Command{
             System.out.println(filePath);
 
             File target = new File(filePath.replaceAll(fileName[0], fileName[1]));
+            if(target.getPath().contains("fock")){
+                System.out.println(".");
+            }
             target.setLastModified(System.currentTimeMillis());
 
             git.add().addFilepattern(target.getPath()).call();
+            git.rm().addFilepattern(filePath);
             git.commit().setMessage(message).call();
         }
     }
