@@ -1,1 +1,1 @@
-git custom.
+This is git-custom CLI.
