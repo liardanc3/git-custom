@@ -142,7 +142,6 @@ public class RenameCommand implements Command{
 
     @SneakyThrows
     private void stageAndCommit(String[] fileName){
-        git.log();
         while(!dateAndPathPQ.isEmpty()){
             String filePath = dateAndPathPQ
                     .poll()
@@ -151,25 +150,9 @@ public class RenameCommand implements Command{
                     .get(filePath)
                     .getFullMessage();
 
-            System.out.println(filePath);
+            new ProcessBuilder("git", "rm", filePath).start().waitFor();
+            new ProcessBuilder("git", "add", filePath.replaceAll(fileName[0],fileName[1])).start().waitFor();
 
-            File oldFile = new File(filePath);
-            if (oldFile.isDirectory()) {
-                FileUtils.deleteDirectory(oldFile);
-            } else {
-                FileUtils.delete(oldFile);
-            }
-
-            File newFile = new File(filePath.replaceAll(fileName[0], fileName[1]));
-            newFile.createNewFile();
-
-            if(newFile.getPath().contains("fock")){
-                System.out.println(".");
-            }
-
-
-            git.add().addFilepattern(newFile.getPath()).call();
-            git.rm().addFilepattern(oldFile.getPath());
             git.commit().setMessage(message).call();
         }
     }
