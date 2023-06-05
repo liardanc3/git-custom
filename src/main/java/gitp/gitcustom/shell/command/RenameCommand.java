@@ -67,7 +67,7 @@ public class RenameCommand implements Command{
         findTargetFiles(new File("."), fileName);
 
         if(continueCheck()) {
-            //renameFiles(fileName, new File("."),"");
+            renameFiles(fileName, new File("."),"");
 
             stageAndCommit(fileName);
             System.out.println("Commit complete and plz push manually. Or you can use the \'push\' command with enter an Access Token.");
@@ -150,7 +150,6 @@ public class RenameCommand implements Command{
                     .get(filePath)
                     .getFullMessage();
 
-            new ProcessBuilder("git", "rm", filePath).start().waitFor();
             new ProcessBuilder("git", "add", filePath.replaceAll(fileName[0],fileName[1])).start().waitFor();
 
             git.commit().setMessage(message).call();
